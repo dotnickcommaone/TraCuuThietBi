@@ -6,39 +6,37 @@
     android:padding="16dp"
     android:fitsSystemWindows="true">
 
-    <EditText
-        android:id="@+id/edit_text_device_name"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/text_view_device_name"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Enter device name" />
+        android:textSize="24sp"
+        android:textStyle="bold" />
 
-    <Spinner
-        android:id="@+id/spinner_device_type"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/text_view_availability"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp" />
 
-    <Switch
-        android:id="@+id/switch_availability"
+    <TextView
+        android:id="@+id/text_view_rental_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Available" />
+        android:layout_marginTop="8dp" />
 
-    <EditText
-        android:id="@+id/edit_text_quantity"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/text_view_quantity"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:hint="Quantity"
-        android:inputType="number" />
+        android:layout_marginTop="8dp" />
 
     <Button
-        android:id="@+id/button_add"
+        android:id="@+id/button_apply_rental"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="16dp"
-        android:text="Add Device" />
+        android:text="Apply for Rental" />
 
 </LinearLayout>
