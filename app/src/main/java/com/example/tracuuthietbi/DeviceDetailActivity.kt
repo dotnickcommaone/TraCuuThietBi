@@ -1,17 +1,21 @@
 package com.example.tracuuthietbi
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 
 class DeviceDetailActivity : AppCompatActivity() {
 
     private lateinit var dbHelper: DatabaseHelper
     private var deviceId: Int = -1
 
+    private lateinit var imageViewDevice: ImageView
     private lateinit var textViewDeviceName: TextView
     private lateinit var textViewAvailability: TextView
     private lateinit var textViewRentalStatus: TextView
@@ -25,6 +29,7 @@ class DeviceDetailActivity : AppCompatActivity() {
         dbHelper = DatabaseHelper(this)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        imageViewDevice = findViewById(R.id.image_view_device_detail)
         textViewDeviceName = findViewById(R.id.text_view_device_name)
         textViewAvailability = findViewById(R.id.text_view_availability)
         textViewRentalStatus = findViewById(R.id.text_view_rental_status)
@@ -38,10 +43,9 @@ class DeviceDetailActivity : AppCompatActivity() {
             return
         }
 
-        // **Kiểm tra xem có phải Admin không**
         val isAdminView = intent.getBooleanExtra("IS_ADMIN_VIEW", false)
         if (isAdminView) {
-            buttonApplyRental.visibility = View.GONE // Ẩn nút nếu là Admin
+            buttonApplyRental.visibility = View.GONE
         } else {
             buttonApplyRental.setOnClickListener {
                 handleRentalApplication()
@@ -70,6 +74,12 @@ class DeviceDetailActivity : AppCompatActivity() {
         textViewAvailability.text = if (device.isAvailable) "Tình trạng: Có sẵn" else "Tình trạng: Đã được thuê"
         textViewRentalStatus.text = if (device.isAvailable) "Trạng thái thuê: Sẵn sàng cho thuê" else "Trạng thái thuê: Hiện đang được thuê"
         textViewQuantity.text = "Số lượng còn lại: ${device.quantity}"
+
+        device.imageUri?.let {
+            Glide.with(this)
+                .load(Uri.parse(it))
+                .into(imageViewDevice)
+        }
     }
 
     private fun handleRentalApplication() {
