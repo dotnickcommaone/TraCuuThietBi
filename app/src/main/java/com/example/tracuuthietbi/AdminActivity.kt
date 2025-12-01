@@ -3,9 +3,9 @@ package com.example.tracuuthietbi
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
-import android.widget.AdapterView
 import android.widget.CheckBox
 import android.widget.ListView
+import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -30,13 +30,51 @@ class AdminActivity : AppCompatActivity() {
         deviceAdapter = DeviceAdapter(this, deviceList)
         listViewDevices.adapter = deviceAdapter
 
-        registerForContextMenu(listViewDevices)
+        // **Thay thế Long Click bằng Short Click để hiển thị menu**
+        listViewDevices.setOnItemClickListener { _, view, position, _ ->
+            val selectedDevice = deviceList[position]
+            showPopupMenu(view, selectedDevice)
+        }
+    }
+
+    private fun showPopupMenu(view: View, device: Device) {
+        val popup = PopupMenu(this, view)
+        popup.menuInflater.inflate(R.menu.device_context_menu, popup.menu)
+
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_view_details -> {
+                    val intent = Intent(this, DeviceDetailActivity::class.java)
+                    intent.putExtra("DEVICE_ID", device.id)
+                    intent.putExtra("IS_ADMIN_VIEW", true)
+                    startActivity(intent)
+                    true
+                }
+                R.id.action_edit_device -> {
+                    val intent = Intent(this, AddDeviceActivity::class.java)
+                    intent.putExtra("DEVICE_ID", device.id)
+                    startActivity(intent)
+                    true
+                }
+                R.id.action_delete_device -> {
+                    showDeleteConfirmationDialog(device)
+                    true
+                }
+                R.id.action_view_rental_history -> {
+                    val intent = Intent(this, RentalHistoryActivity::class.java)
+                    intent.putExtra("DEVICE_ID", device.id)
+                    intent.putExtra("DEVICE_NAME", device.name)
+                    startActivity(intent)
+                    true
+                }
+                else -> false
+            }
+        }
+        popup.show()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        // Thêm menu của Admin (nút +)
         menuInflater.inflate(R.menu.admin_menu, menu)
-        // Thêm menu sắp xếp
         menuInflater.inflate(R.menu.sort_menu, menu)
         return true
     }
@@ -48,7 +86,7 @@ class AdminActivity : AppCompatActivity() {
                 return true
             }
             R.id.sort_all -> {
-                refreshDeviceList(null) // null để tải tất cả
+                refreshDeviceList(null)
                 return true
             }
             R.id.sort_laptop -> {
@@ -67,42 +105,9 @@ class AdminActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onContextItemSelected(item: MenuItem): Boolean {
-        val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
-        val device = deviceList[info.position]
-
-        return when (item.itemId) {
-            R.id.action_view_details -> {
-                val intent = Intent(this, DeviceDetailActivity::class.java)
-                intent.putExtra("DEVICE_ID", device.id)
-                intent.putExtra("IS_ADMIN_VIEW", true)
-                startActivity(intent)
-                true
-            }
-            R.id.action_edit_device -> {
-                val intent = Intent(this, AddDeviceActivity::class.java)
-                intent.putExtra("DEVICE_ID", device.id)
-                startActivity(intent)
-                true
-            }
-            R.id.action_delete_device -> {
-                showDeleteConfirmationDialog(device)
-                true
-            }
-            R.id.action_view_rental_history -> {
-                val intent = Intent(this, RentalHistoryActivity::class.java)
-                intent.putExtra("DEVICE_ID", device.id)
-                intent.putExtra("DEVICE_NAME", device.name)
-                startActivity(intent)
-                true
-            }
-            else -> super.onContextItemSelected(item)
-        }
-    }
-
     override fun onResume() {
         super.onResume()
-        refreshDeviceList(null) // Tải lại toàn bộ danh sách khi quay lại
+        refreshDeviceList(null)
     }
 
     private fun refreshDeviceList(type: String?) {
@@ -117,7 +122,33 @@ class AdminActivity : AppCompatActivity() {
     }
 
     private fun showDeleteConfirmationDialog(device: Device) {
-        // ... (hàm này giữ nguyên)
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_confirm_delete, null)
+        val checkBoxConfirm = dialogView.findViewById<CheckBox>(R.id.checkbox_confirm_delete)
+        val dialogMessage = dialogView.findViewById<TextView>(R.id.text_view_dialog_message)
+
+        dialogMessage.text = "Bạn có chắc chắn muốn xóa thiết bị '${device.name}' không?"
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Xác nhận xóa")
+            .setView(dialogView)
+            .setPositiveButton("OK") { _, _ ->
+                dbHelper.deleteDevice(device.id)
+                refreshDeviceList(null)
+                Toast.makeText(this, "Đã xóa thiết bị", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Hủy", null)
+            .create()
+
+        dialog.setOnShowListener { 
+            val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            okButton.isEnabled = false
+
+            checkBoxConfirm.setOnCheckedChangeListener { _, isChecked ->
+                okButton.isEnabled = isChecked
+            }
+        }
+
+        dialog.show()
     }
 
     override fun onSupportNavigateUp(): Boolean {

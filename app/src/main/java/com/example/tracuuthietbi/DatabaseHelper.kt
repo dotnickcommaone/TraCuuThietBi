@@ -171,8 +171,16 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return deviceList
     }
 
-    fun isUserRentingDevice(username: String): Boolean {
-        readableDatabase.query(TABLE_RENTAL_HISTORY, null, "$KEY_RECORD_USERNAME = ? AND $KEY_RETURN_DATE IS NULL", arrayOf(username), null, null, null).use { cursor ->
+    fun isUserRentingDeviceFromCategory(username: String, deviceType: String): Boolean {
+        val query = """
+            SELECT h.$KEY_RECORD_ID
+            FROM $TABLE_RENTAL_HISTORY h
+            INNER JOIN $TABLE_DEVICES d ON h.$KEY_RECORD_DEVICE_ID = d.$KEY_ID
+            WHERE h.$KEY_RECORD_USERNAME = ?
+            AND d.$KEY_TYPE = ?
+            AND h.$KEY_RETURN_DATE IS NULL
+        """
+        readableDatabase.rawQuery(query, arrayOf(username, deviceType)).use { cursor ->
             return cursor.count > 0
         }
     }
