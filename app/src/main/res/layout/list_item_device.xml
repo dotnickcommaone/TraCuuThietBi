@@ -13,13 +13,28 @@
         android:scaleType="centerCrop"
         android:src="@android:drawable/ic_menu_gallery" />
 
-    <TextView
-        android:id="@+id/text_view_device_name"
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginStart="16dp"
-        android:textSize="18sp" />
+        android:orientation="vertical"
+        android:layout_marginStart="16dp">
+
+        <TextView
+            android:id="@+id/text_view_device_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_view_rented_by"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textStyle="italic"
+            android:visibility="gone" />
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/image_view_dot"

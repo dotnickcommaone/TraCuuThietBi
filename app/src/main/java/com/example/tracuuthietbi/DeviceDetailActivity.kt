@@ -14,13 +14,14 @@ class DeviceDetailActivity : AppCompatActivity() {
 
     private lateinit var dbHelper: DatabaseHelper
     private var deviceId: Int = -1
+    private var currentUsername: String? = null
 
     private lateinit var imageViewDevice: ImageView
     private lateinit var textViewDeviceName: TextView
     private lateinit var textViewAvailability: TextView
     private lateinit var textViewRentalStatus: TextView
     private lateinit var textViewQuantity: TextView
-    private lateinit var buttonApplyRental: Button
+    private lateinit var buttonAction: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,9 +35,11 @@ class DeviceDetailActivity : AppCompatActivity() {
         textViewAvailability = findViewById(R.id.text_view_availability)
         textViewRentalStatus = findViewById(R.id.text_view_rental_status)
         textViewQuantity = findViewById(R.id.text_view_quantity)
-        buttonApplyRental = findViewById(R.id.button_apply_rental)
+        buttonAction = findViewById(R.id.button_apply_rental) // Nút này giờ có thể là Thuê hoặc Trả
 
         deviceId = intent.getIntExtra("DEVICE_ID", -1)
+        currentUsername = intent.getStringExtra("USERNAME")
+
         if (deviceId == -1) {
             Toast.makeText(this, "Lỗi: Không tìm thấy ID thiết bị", Toast.LENGTH_LONG).show()
             finish()
@@ -45,11 +48,7 @@ class DeviceDetailActivity : AppCompatActivity() {
 
         val isAdminView = intent.getBooleanExtra("IS_ADMIN_VIEW", false)
         if (isAdminView) {
-            buttonApplyRental.visibility = View.GONE
-        } else {
-            buttonApplyRental.setOnClickListener {
-                handleRentalApplication()
-            }
+            buttonAction.visibility = View.GONE
         }
     }
 
@@ -72,30 +71,52 @@ class DeviceDetailActivity : AppCompatActivity() {
         supportActionBar?.title = device.name
         textViewDeviceName.text = device.name
         textViewAvailability.text = if (device.isAvailable) "Tình trạng: Có sẵn" else "Tình trạng: Đã được thuê"
-        textViewRentalStatus.text = if (device.isAvailable) "Trạng thái thuê: Sẵn sàng cho thuê" else "Trạng thái thuê: Hiện đang được thuê"
+        textViewRentalStatus.text = if (device.rented_by_user != null) "Người thuê: ${device.rented_by_user}" else "Trạng thái thuê: Sẵn sàng cho thuê"
         textViewQuantity.text = "Số lượng còn lại: ${device.quantity}"
 
-        device.imageUri?.let {
-            Glide.with(this)
-                .load(Uri.parse(it))
-                .into(imageViewDevice)
+        device.imageUri?.let { Glide.with(this).load(Uri.parse(it)).into(imageViewDevice) }
+
+        // Cập nhật nút Thuê/Trả
+        if (device.rented_by_user == currentUsername) {
+            buttonAction.text = "Trả thiết bị"
+            buttonAction.isEnabled = true
+            buttonAction.setOnClickListener { handleReturnDevice(device) }
+        } else {
+            buttonAction.text = "Đăng ký thuê"
+            buttonAction.isEnabled = device.isAvailable && device.quantity > 0
+            buttonAction.setOnClickListener { handleRentDevice(device) }
         }
     }
 
-    private fun handleRentalApplication() {
-        val currentDevice = dbHelper.getDevice(deviceId)
-        if (currentDevice != null && currentDevice.isAvailable && currentDevice.quantity > 0) {
-            val newQuantity = currentDevice.quantity - 1
-            val updatedDevice = currentDevice.copy(
-                quantity = newQuantity,
-                isAvailable = newQuantity > 0
-            )
-            dbHelper.updateDevice(updatedDevice)
-            updateUi(updatedDevice)
-            Toast.makeText(this, "Bạn đã đăng ký thuê ${updatedDevice.name}", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "Thiết bị này hiện không có sẵn để thuê", Toast.LENGTH_SHORT).show()
+    private fun handleRentDevice(device: Device) {
+        if (currentUsername == null) return
+
+        if (dbHelper.isUserRentingDevice(currentUsername!!)) {
+            Toast.makeText(this, "Bạn chỉ có thể thuê 1 thiết bị tại một thời điểm", Toast.LENGTH_LONG).show()
+            return
         }
+
+        val newQuantity = device.quantity - 1
+        val updatedDevice = device.copy(
+            quantity = newQuantity,
+            isAvailable = newQuantity > 0,
+            rented_by_user = currentUsername
+        )
+        dbHelper.updateDevice(updatedDevice)
+        updateUi(updatedDevice)
+        Toast.makeText(this, "Thuê thành công!", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun handleReturnDevice(device: Device) {
+        val newQuantity = device.quantity + 1
+        val updatedDevice = device.copy(
+            quantity = newQuantity,
+            isAvailable = true,
+            rented_by_user = null
+        )
+        dbHelper.updateDevice(updatedDevice)
+        updateUi(updatedDevice)
+        Toast.makeText(this, "Đã trả thiết bị!", Toast.LENGTH_SHORT).show()
     }
 
     override fun onSupportNavigateUp(): Boolean {

@@ -8,5 +8,6 @@ data class Device(
     val type: String,
     val isAvailable: Boolean,
     val quantity: Int,
-    val imageUri: String? = null // Thêm trường để lưu URI ảnh
-) : Serializable // Implement Serializable để có thể truyền đối tượng qua Intent nếu cần
+    val imageUri: String? = null,
+    val rented_by_user: String? = null // Thêm người dùng đang thuê
+) : Serializable

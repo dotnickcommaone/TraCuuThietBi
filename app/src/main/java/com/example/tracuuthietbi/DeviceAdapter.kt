@@ -18,9 +18,17 @@ class DeviceAdapter(context: Context, devices: List<Device>) : ArrayAdapter<Devi
 
         val imageViewDevice = view.findViewById<ImageView>(R.id.image_view_device_item)
         val textViewDeviceName = view.findViewById<TextView>(R.id.text_view_device_name)
+        val textViewRentedBy = view.findViewById<TextView>(R.id.text_view_rented_by)
         val imageViewDot = view.findViewById<ImageView>(R.id.image_view_dot)
 
         textViewDeviceName.text = device?.name
+
+        if (device?.rented_by_user != null) {
+            textViewRentedBy.text = "Người thuê: ${device.rented_by_user}"
+            textViewRentedBy.visibility = View.VISIBLE
+        } else {
+            textViewRentedBy.visibility = View.GONE
+        }
 
         if (device?.isAvailable == true) {
             imageViewDot.setImageResource(R.drawable.dot_green)
@@ -32,11 +40,10 @@ class DeviceAdapter(context: Context, devices: List<Device>) : ArrayAdapter<Devi
             val imageUri = Uri.parse(it)
             Glide.with(context)
                 .load(imageUri)
-                .placeholder(R.drawable.ic_launcher_background) // Ảnh tạm thời trong khi tải
-                .error(R.drawable.ic_launcher_foreground) // Ảnh khi có lỗi
+                .placeholder(R.mipmap.ic_launcher) 
+                .error(R.mipmap.ic_launcher_round) 
                 .into(imageViewDevice)
         } ?: run {
-            // Nếu không có URI, hiển thị ảnh mặc định
             imageViewDevice.setImageResource(R.mipmap.ic_launcher)
         }
 

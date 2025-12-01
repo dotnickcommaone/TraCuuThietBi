@@ -33,7 +33,6 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Logic đăng nhập
             when {
                 username == "admin" && password == "admin" -> {
                     Toast.makeText(this, "Đăng nhập thành công với quyền Admin", Toast.LENGTH_SHORT).show()
@@ -41,7 +40,9 @@ class MainActivity : AppCompatActivity() {
                 }
                 dbHelper.checkUser(username, password) -> {
                     Toast.makeText(this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show()
-                    startActivity(Intent(this, UserActivity::class.java))
+                    val intent = Intent(this, UserActivity::class.java)
+                    intent.putExtra("USERNAME", username) // **Gửi username đi**
+                    startActivity(intent)
                 }
                 else -> {
                     Toast.makeText(this, "Sai tên đăng nhập hoặc mật khẩu", Toast.LENGTH_SHORT).show()

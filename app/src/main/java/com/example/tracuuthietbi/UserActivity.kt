@@ -10,6 +10,7 @@ class UserActivity : AppCompatActivity() {
     private lateinit var dbHelper: DatabaseHelper
     private lateinit var deviceAdapter: DeviceAdapter
     private var deviceList: MutableList<Device> = mutableListOf()
+    private var currentUsername: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -18,6 +19,7 @@ class UserActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = "User View"
 
+        currentUsername = intent.getStringExtra("USERNAME")
         dbHelper = DatabaseHelper(this)
 
         val listViewDevices = findViewById<ListView>(R.id.list_view_devices)
@@ -28,6 +30,7 @@ class UserActivity : AppCompatActivity() {
             val selectedDevice = deviceList[position]
             val intent = Intent(this, DeviceDetailActivity::class.java)
             intent.putExtra("DEVICE_ID", selectedDevice.id)
+            intent.putExtra("USERNAME", currentUsername) // **Gửi username sang màn hình chi tiết**
             startActivity(intent)
         }
     }
