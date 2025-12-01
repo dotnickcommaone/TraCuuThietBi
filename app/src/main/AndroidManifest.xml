@@ -29,6 +29,9 @@
             android:name=".ForgotPasswordActivity"
             android:exported="false" />
         <activity
+            android:name=".RentalHistoryActivity"
+            android:exported="false" />
+        <activity
             android:name=".ListDevicesActivity"
             android:exported="false" />
         <activity

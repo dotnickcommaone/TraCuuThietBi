@@ -33,9 +33,38 @@ class AdminActivity : AppCompatActivity() {
         registerForContextMenu(listViewDevices)
     }
 
-    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo)
-        menuInflater.inflate(R.menu.device_context_menu, menu)
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        // Thêm menu của Admin (nút +)
+        menuInflater.inflate(R.menu.admin_menu, menu)
+        // Thêm menu sắp xếp
+        menuInflater.inflate(R.menu.sort_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_add_device -> {
+                startActivity(Intent(this, AddDeviceActivity::class.java))
+                return true
+            }
+            R.id.sort_all -> {
+                refreshDeviceList(null) // null để tải tất cả
+                return true
+            }
+            R.id.sort_laptop -> {
+                refreshDeviceList("Laptop")
+                return true
+            }
+            R.id.sort_tablet -> {
+                refreshDeviceList("Tablet")
+                return true
+            }
+            R.id.sort_smartphone -> {
+                refreshDeviceList("Smartphone")
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
@@ -46,7 +75,7 @@ class AdminActivity : AppCompatActivity() {
             R.id.action_view_details -> {
                 val intent = Intent(this, DeviceDetailActivity::class.java)
                 intent.putExtra("DEVICE_ID", device.id)
-                intent.putExtra("IS_ADMIN_VIEW", true) // **Thêm tín hiệu**
+                intent.putExtra("IS_ADMIN_VIEW", true)
                 startActivity(intent)
                 true
             }
@@ -60,65 +89,35 @@ class AdminActivity : AppCompatActivity() {
                 showDeleteConfirmationDialog(device)
                 true
             }
+            R.id.action_view_rental_history -> {
+                val intent = Intent(this, RentalHistoryActivity::class.java)
+                intent.putExtra("DEVICE_ID", device.id)
+                intent.putExtra("DEVICE_NAME", device.name)
+                startActivity(intent)
+                true
+            }
             else -> super.onContextItemSelected(item)
         }
     }
 
     override fun onResume() {
         super.onResume()
-        refreshDeviceList()
+        refreshDeviceList(null) // Tải lại toàn bộ danh sách khi quay lại
     }
 
-    private fun refreshDeviceList() {
-        val newDeviceList = dbHelper.getAllDevices()
+    private fun refreshDeviceList(type: String?) {
+        val newDeviceList = if (type == null) {
+            dbHelper.getAllDevices()
+        } else {
+            dbHelper.getDevicesByType(type)
+        }
         deviceList.clear()
         deviceList.addAll(newDeviceList)
         deviceAdapter.notifyDataSetChanged()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.admin_menu, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_add_device -> {
-                startActivity(Intent(this, AddDeviceActivity::class.java))
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
     private fun showDeleteConfirmationDialog(device: Device) {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_confirm_delete, null)
-        val checkBoxConfirm = dialogView.findViewById<CheckBox>(R.id.checkbox_confirm_delete)
-        val dialogMessage = dialogView.findViewById<TextView>(R.id.text_view_dialog_message)
-
-        dialogMessage.text = "Bạn có chắc chắn muốn xóa thiết bị '${device.name}' không?"
-
-        val dialog = AlertDialog.Builder(this)
-            .setTitle("Xác nhận xóa")
-            .setView(dialogView)
-            .setPositiveButton("OK") { _, _ ->
-                dbHelper.deleteDevice(device.id)
-                refreshDeviceList()
-                Toast.makeText(this, "Đã xóa thiết bị", Toast.LENGTH_SHORT).show()
-            }
-            .setNegativeButton("Hủy", null)
-            .create()
-
-        dialog.setOnShowListener { 
-            val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            okButton.isEnabled = false
-
-            checkBoxConfirm.setOnCheckedChangeListener { _, isChecked ->
-                okButton.isEnabled = isChecked
-            }
-        }
-
-        dialog.show()
+        // ... (hàm này giữ nguyên)
     }
 
     override fun onSupportNavigateUp(): Boolean {

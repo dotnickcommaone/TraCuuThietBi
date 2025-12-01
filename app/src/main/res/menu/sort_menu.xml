@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_sort"
+        android:icon="@android:drawable/ic_menu_sort_by_size"
+        android:title="Sắp xếp"
+        app:showAsAction="ifRoom">
+        <menu>
+            <item
+                android:id="@+id/sort_all"
+                android:title="Tất cả" />
+            <item
+                android:id="@+id/sort_laptop"
+                android:title="Laptop" />
+            <item
+                android:id="@+id/sort_tablet"
+                android:title="Tablet" />
+            <item
+                android:id="@+id/sort_smartphone"
+                android:title="Smartphone" />
+        </menu>
+    </item>
+</menu>

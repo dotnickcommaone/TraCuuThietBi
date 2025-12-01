@@ -9,4 +9,7 @@
     <item
         android:id="@+id/action_delete_device"
         android:title="Xóa" />
+    <item
+        android:id="@+id/action_view_rental_history"
+        android:title="Xem lịch sử thuê" />
 </menu>
